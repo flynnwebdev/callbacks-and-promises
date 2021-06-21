@@ -15,39 +15,54 @@
 //   .then((data) => console.log(`The answer is ${data}`))
 //   .catch((err) => console.log(err));
 
-function getJoke() {
-  return new Promise((resolve, reject) => {
-    fetch("https://icanhazdadjoke.com/", {
-      headers: {
-        "Accept": "application/json",
-      },
-    })
-      .then((data) => data.json())
-      .then((data) => {
-        if (data.joke) {
-          resolve(data.joke);
-        }
-
-        reject(new Error("Could not retrieve joke!"));
-      });
+async function asyncGetJoke() {
+  let result = await fetch("https://icanhazdadjoke.com/", {
+    headers: {
+      Accept: "application/json",
+    },
   });
+  let data = await result.json();
+  if (data.joke) {
+    return data.joke;
+  }
+  throw new Error("Could not retrieve joke!");
 }
 
-document.querySelector("button").addEventListener("click", (e) => {
-  document.querySelector("#jokes").innerHTML = "";
-  let jokePromises = []; //[getJoke(), getJoke(), getJoke(), getJoke(), getJoke()]
-  for (let i = 0; i < 5; jokePromises.push(getJoke()), i++) {}
-  // console.log(jokePromises)
+// function getJoke() {
+//   return new Promise((resolve, reject) => {
+//     fetch("https://icanhazdadjoke.com/", {
+//       headers: {
+//         Accept: "application/json",
+//       },
+//     })
+//       .then((data) => data.json())
+//       .then((data) => {
+//         if (data.joke) {
+//           resolve(data.joke);
+//         }
 
-  Promise.all(jokePromises)
-    .then((jokes) => {
-      jokes.forEach((value, index) => {
-        document.querySelector("#jokes").innerHTML += `<p>${
-          index + 1
+//         reject(new Error("Could not retrieve joke!"));
+//       })
+//       .catch(() => reject(new Error("Could not retrieve joke!")));
+//   });
+// }
+
+document.querySelector("button").addEventListener("click", async (e) => {
+  try {
+    document.querySelector("#jokes").innerHTML = "";
+    let jokePromises = []; //[getJoke(), getJoke(), getJoke(), getJoke(), getJoke()]
+    for (let i = 0; i < 5; jokePromises.push(asyncGetJoke()), i++) { }
+
+    let jokes = await Promise.all(jokePromises)
+
+    jokes.forEach((value, index) => {
+      document.querySelector("#jokes").innerHTML += `<p>${index + 1
         }. ${value}</p>`;
-      });
-    })
-    .catch((err) => console.log(err));
+    });
+  }
+  catch (err) {
+    console.log(err)
+  }
 
   // getJoke()
   // .then((joke) => {
@@ -73,5 +88,5 @@ document.querySelector("button").addEventListener("click", (e) => {
 });
 
 fetch("http://randomuser.me/api")
-    .then(res => res.json())
-    .then(data => console.log(data))
+  .then((res) => res.json())
+  .then((data) => console.log(data));
