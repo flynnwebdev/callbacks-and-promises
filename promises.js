@@ -1,92 +1,37 @@
-// function adder(x, y) {
-//   return new Promise((resolve, reject) => {
-//     let answer = x + y;
+import { getJoke } from './jokes.js'
 
-//     if (isNaN(answer)) {
-//       reject(`Input must be numeric, received (${x}, ${y})`);
-//     }
-
-//     resolve(answer);
-//   });
-// }
-
-// adder(5, 9)
-//   .then((data) => adder(data, "hi"))
-//   .then((data) => console.log(`The answer is ${data}`))
-//   .catch((err) => console.log(err));
-
-async function asyncGetJoke() {
-  let result = await fetch("https://icanhazdadjoke.com/", {
-    headers: {
-      Accept: "application/json",
-    },
+function displayJokes() {
+  const jokes = JSON.parse(localStorage.jokes || "[]");
+  const ul = document.querySelector("ul");
+  ul.innerHTML = ''
+  jokes.forEach((joke) => {
+    const li = document.createElement("li");
+    li.innerText = joke;
+    ul.appendChild(li);
   });
-  let data = await result.json();
-  if (data.joke) {
-    return data.joke;
-  }
-  throw new Error("Could not retrieve joke!");
 }
 
-// function getJoke() {
-//   return new Promise((resolve, reject) => {
-//     fetch("https://icanhazdadjoke.com/", {
-//       headers: {
-//         Accept: "application/json",
-//       },
-//     })
-//       .then((data) => data.json())
-//       .then((data) => {
-//         if (data.joke) {
-//           resolve(data.joke);
-//         }
+function get5jokes() {
+  const jokePromises = [];
 
-//         reject(new Error("Could not retrieve joke!"));
-//       })
-//       .catch(() => reject(new Error("Could not retrieve joke!")));
-//   });
+  for (let i = 0; i < 5; i++) {
+    jokePromises.push(getJoke());
+  }
+
+  Promise.all(jokePromises).then((jokes) => {
+    const oldJokes = JSON.parse(localStorage.jokes || "[]");
+    localStorage.jokes = JSON.stringify(oldJokes.concat(jokes));
+    displayJokes()
+  });
+}
+
+document.querySelector("button").addEventListener("click", get5jokes);
+
+displayJokes()
+
+// async function asyncGetJoke() {
+//   const result = await getJoke()
+//   return 42
 // }
 
-document.querySelector("button").addEventListener("click", async (e) => {
-  try {
-    document.querySelector("#jokes").innerHTML = "";
-    let jokePromises = []; //[getJoke(), getJoke(), getJoke(), getJoke(), getJoke()]
-    for (let i = 0; i < 5; jokePromises.push(asyncGetJoke()), i++) { }
-
-    let jokes = await Promise.all(jokePromises)
-
-    jokes.forEach((value, index) => {
-      document.querySelector("#jokes").innerHTML += `<p>${index + 1
-        }. ${value}</p>`;
-    });
-  }
-  catch (err) {
-    console.log(err)
-  }
-
-  // getJoke()
-  // .then((joke) => {
-  //   document.querySelector("#jokes").innerHTML += `<p>1. ${joke}</p>`;
-  //   return getJoke();
-  // })
-  // .then((joke) => {
-  //   document.querySelector("#jokes").innerHTML += `<p>2. ${joke}</p>`;
-  //   return getJoke();
-  // })
-  // .then((joke) => {
-  //   document.querySelector("#jokes").innerHTML += `<p>3. ${joke}</p>`;
-  //   return getJoke();
-  // })
-  // .then((joke) => {
-  //   document.querySelector("#jokes").innerHTML += `<p>4. ${joke}</p>`;
-  //   return getJoke();
-  // })
-  // .then((joke) => {
-  //   document.querySelector("#jokes").innerHTML += `<p>5. ${joke}</p>`;
-  // })
-  // .catch((err) => console.log(err));
-});
-
-fetch("http://randomuser.me/api")
-  .then((res) => res.json())
-  .then((data) => console.log(data));
+// console.log(asyncGetJoke())
